@@ -2,17 +2,159 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Aplikasi Saya</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Kontak - GitHub Pages ke Google Sheets</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f4f7f6;
+    }
+    .form-container {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
 </head>
 <body>
-  <h1>Web App Apps Script di GitHub Pages</h1>
+
+<div class="form-container">
+  <h2>Hubungi Kami</h2>
   
-  <!-- Ganti URL src dengan URL Web App Apps Script kamu -->
-  <iframe 
-    src="https://script.google.com/macros/s/AKfycbzxV5viZrJa-3b5VQgMiaWHK-Ze9XnsarMCyp75KO8/dev" 
-    width="100%" 
-    height="600px" 
-    style="border:none;">
-  </iframe>
+  <form id="contact-form">
+    <div class="form-group">
+      <label for="nama">Nama Lengkap:</label>
+      <input type="text" id="nama" name="nama" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="pesan">Pesan:</label>
+      <textarea id="pesan" name="pesan" rows="4" required></textarea>
+    </div>
+
+    <button type="submit" id="submit-btn">Kirim Pesan</button>
+  </form>
+
+  <div id="status-message"></div>
+</div>
+
+<script>
+  // 1. Ganti URL di bawah ini dengan URL Web App Apps Script Anda
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzmxuOdiVGp11JxnP9kyYkZcjvn7GAFmhga-HuZ3CzxV7-UBz66F5-3PtG3eam3bFj/exec";
+
+  const form = document.getElementById('contact-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const statusMessage = document.getElementById('status-message');
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault(); // Mencegah reload halaman saat submit
+
+    // Tampilkan indikator proses
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Mengirim...';
+    statusMessage.style.display = 'none';
+
+    // Ambil nilai dari input form
+    const formData = {
+      nama: document.getElementById('nama').value,
+      email: document.getElementById('email').value,
+      pesan: document.getElementById('pesan').value
+    };
+
+    // Kirim data menggunakan Fetch API
+    // Catatan: Mode 'no-cors' atau format text/plain sering digunakan untuk menghindari isu CORS pada Apps Script
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8', 
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.result === 'success') {
+        showStatus('Pesan Anda berhasil terkirim!', 'success');
+        form.reset(); // Kosongkan formulir
+      } else {
+        showStatus('Gagal mengirim pesan: ' + data.message, 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showStatus('Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Kirim Pesan';
+    });
+  });
+
+  function showStatus(text, type) {
+    statusMessage.innerText = text;
+    statusMessage.className = type;
+    statusMessage.style.display = 'block';
+  }
+</script>
+
 </body>
 </html>
